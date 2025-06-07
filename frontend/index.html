@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Airlane - Flight Booking</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js"></script>  
+</head>
+<body class="bg-gray-50">
+  <header class="header">
+    <div class="container">
+      <div class="header-content">
+        <div class="logo">
+          <i class="fas fa-plane-departure"></i>
+          <h1>Airlane</h1>
+        </div>
+        <nav class="main-nav">
+          <a href="#search">Find Flights</a>
+          <a href="#booking">My Bookings</a>
+          <a href="#checkin">Online Check-in</a>
+          <a href="#profile">My Account</a>
+        </nav>
+        <button class="mobile-menu-button" id="mobile-menu-button">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Mobile menu -->
+    <div class="mobile-menu hidden" id="mobile-menu">
+      <a href="#search">Find Flights</a>
+      <a href="#booking">My Bookings</a>
+      <a href="#checkin">Online Check-in</a>
+      <a href="#profile">My Account</a>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- Hero section -->
+    <section class="hero">
+      <div class="hero-content">
+        <h2>Find the perfect flight for your journey</h2>
+        <p>Choose your destination, date and book tickets online</p>
+        <a href="#search" class="cta-button">Find Flights</a>
+      </div>
+    </section>
+
+
+  
+      
+   <!-- Flight Search -->
+<section id="search" class="search-section">
+  <h2>Find Flights</h2>
+  <form id="flightSearchForm" class="search-form">
+    <div class="form-group">
+      <label for="departure">From</label>
+      <select id="departure" required>
+        <option value="">Select airport</option>
+        <option value="1">Kyiv (KBP)</option>
+        <option value="2">London (LHR)</option>
+        <option value="3">Paris (CDG)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="arrival">To</label>
+      <select id="arrival" required>
+        <option value="">Select airport</option>
+        <option value="1">Kyiv (KBP)</option>
+        <option value="2">London (LHR)</option>
+        <option value="3">Paris (CDG)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="departureDate">Departure Date</label>
+      <input 
+        type="date" 
+        id="departureDate" 
+        required
+        min="2025-06-01" 
+        max="2026-12-31"
+      >
+      <small class="date-hint">Format: YYYY-MM-DD</small>
+    </div>
+    <div class="form-submit">
+      <button type="submit">Search Flights</button>
+    </div>
+  </form>
+  
+  <div id="searchResults" class="search-results"></div>
+</section>
+
+    <!-- My Bookings -->
+    <section id="booking" class="bookings-section">
+      <h2>My Bookings</h2>
+      <div id="userBookings">
+        <p>Please sign in to view your bookings</p>
+      </div>
+    </section>
+
+    <!-- Online Check-in -->
+    <section id="checkin" class="checkin-section">
+      <h2>Online Check-in</h2>
+      <form id="checkinForm">
+        <div class="form-group">
+          <label for="bookingNumber">Booking Reference</label>
+          <input type="text" id="bookingNumber" placeholder="ABC123">
+        </div>
+        <div class="form-group">
+          <label for="lastName">Last Name</label>
+          <input type="text" id="lastName" placeholder="Smith">
+        </div>
+        <button type="submit">Find Booking</button>
+      </form>
+      
+      <div id="checkinResults" class="hidden">
+        <h3>Available Flights for Check-in</h3>
+        <div id="flightsToCheckin"></div>
+      </div>
+    </section>
+
+    <!-- My Account -->
+    <section id="profile" class="profile-section">
+      <h2>My Account</h2>
+      <div id="authSection">
+        <div id="loginForm">
+          <h3>Sign In</h3>
+          <div class="form-group">
+            <label for="loginEmail">Email</label>
+            <input type="email" id="loginEmail" placeholder="your@email.com">
+          </div>
+          <div class="form-group">
+            <label for="loginPassword">Password</label>
+            <input type="password" id="loginPassword" placeholder="••••••••">
+          </div>
+          <button id="loginButton">Sign In</button>
+          <p>
+            Don't have an account? <button id="showRegisterForm">Register</button>
+          </p>
+        </div>
+        
+        <div id="registerForm" class="hidden">
+          <h3>Create Account</h3>
+          <div class="form-group">
+            <label for="regFullName">Full Name</label>
+            <input type="text" id="regFullName" placeholder="John Smith">
+          </div>
+          <div class="form-group">
+            <label for="regEmail">Email</label>
+            <input type="email" id="regEmail" placeholder="your@email.com">
+          </div>
+          <div class="form-group">
+            <label for="regPhone">Phone</label>
+            <input type="tel" id="regPhone" placeholder="+1234567890">
+          </div>
+          <div class="form-group">
+            <label for="regPassword">Password</label>
+            <input type="password" id="regPassword" placeholder="••••••••">
+          </div>
+          <button id="registerButton">Register</button>
+          <p>
+            Already have an account? <button id="showLoginForm">Sign In</button>
+          </p>
+        </div>
+      </div>
+      
+      <div id="userProfile" class="hidden">
+        <div class="profile-header">
+          <h3>Welcome, <span id="userName"></span>!</h3>
+          <button id="logoutButton">Sign Out</button>
+        </div>
+        
+        <div class="profile-grid">
+          <div class="profile-card">
+            <h4>Contact Information</h4>
+            <p id="userEmail"></p>
+            <p id="userPhone"></p>
+            <button id="editProfileButton">Edit</button>
+          </div>
+          
+          <div class="profile-card">
+            <h4>Settings</h4>
+            <div class="setting-item">
+              <input type="checkbox" id="emailNotifications">
+              <label for="emailNotifications">Email Notifications</label>
+            </div>
+            <div class="setting-item">
+              <input type="checkbox" id="smsNotifications">
+              <label for="smsNotifications">SMS Notifications</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <h3>Airlane</h3>
+          <p>Our airline offers convenient ticket booking and online check-in services.</p>
+        </div>
+        <div class="footer-col">
+          <h3>Navigation</h3>
+          <ul>
+            <li><a href="#search">Find Flights</a></li>
+            <li><a href="#booking">My Bookings</a></li>
+            <li><a href="#checkin">Online Check-in</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Contact</h3>
+          <ul>
+            <li><i class="fas fa-phone-alt"></i> +1 234 567 890</li>
+            <li><i class="fas fa-envelope"></i> info@airlane.com</li>
+            <li><i class="fas fa-map-marker-alt"></i> New York, USA</li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h3>Subscribe</h3>
+          <p>Get special offers</p>
+          <div class="subscribe-form">
+            <input type="email" placeholder="Your email">
+            <button><i class="fas fa-paper-plane"></i></button>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 Airlane. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Booking Modal -->
+  <div id="bookingModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Book Flight</h3>
+        <button id="closeBookingModal"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="bookingForm">
+        <input type="hidden" id="flightIdToBook">
+        <div class="form-group">
+          <label>Flight</label>
+          <p id="flightInfo"></p>
+        </div>
+        <div class="form-group">
+          <label for="passengerName">Full Name</label>
+          <input type="text" id="passengerName" required>
+        </div>
+        <div class="form-group">
+          <label for="passengerEmail">Email</label>
+          <input type="email" id="passengerEmail" required>
+        </div>
+        <div class="form-group">
+          <label for="passengerPhone">Phone</label>
+          <input type="tel" id="passengerPhone" required>
+        </div>
+        <div class="form-group">
+          <label for="seatSelection">Seat</label>
+          <select id="seatSelection" required>
+            <option value="">Select seat</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="discountCode">Promo Code (optional)</label>
+          <input type="text" id="discountCode">
+        </div>
+        <div class="form-group">
+          <label>Price</label>
+          <p id="bookingPrice">0.00 $</p>
+        </div>
+        <button type="submit">Book Now</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Payment Modal -->
+  <div id="paymentModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Payment</h3>
+        <button id="closePaymentModal"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="paymentForm">
+        <input type="hidden" id="bookingIdToPay">
+        <div class="form-group">
+          <label>Amount to Pay</label>
+          <p id="paymentAmount">0.00 $</p>
+        </div>
+        <div class="form-group">
+          <label for="cardNumber">Card Number</label>
+          <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="cardExpiry">Expiry Date</label>
+            <input type="text" id="cardExpiry" placeholder="MM/YY" required>
+          </div>
+          <div class="form-group">
+            <label for="cardCvc">CVC</label>
+            <input type="text" id="cardCvc" placeholder="123" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="cardName">Name on Card</label>
+          <input type="text" id="cardName" required>
+        </div>
+        <button type="submit">Pay Now</button>
+      </form>
+    </div>
+  </div>
+
+  
+</body>
+</html>
