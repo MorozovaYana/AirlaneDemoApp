@@ -123,6 +123,79 @@ void handle_airports_request(int client) {
     send_response(client, json);
 }
 
+void handle_flights_request(int client, const std::string& departure_id, const std::string& arrival_id, const std::string& date) {
+    PGconn* conn = PQconnectdb("dbname=airlanedb user=postgres password=postgres host=db port=5432");
+    if (PQstatus(conn) != CONNECTION_OK) {
+        send_response(client, "{\"error\":\"Database connection failed\"}");
+        PQfinish(conn);
+        return;
+    }
+
+    std::string query = R"(
+        SELECT 
+            f.id, 
+            p.model as plane_model, 
+            p.capacity as plane_capacity,
+            dep.name as departure_name, 
+            dep.code as departure_code, 
+            dep.city as departure_city,
+            arr.name as arrival_name, 
+            arr.code as arrival_code, 
+            arr.city as arrival_city,
+            TO_CHAR(f.departure_time, 'YYYY-MM-DD HH24:MI:SS') as departure_time,
+            TO_CHAR(f.arrival_time, 'YYYY-MM-DD HH24:MI:SS') as arrival_time,
+            fs.name as status_name,
+            (SELECT COUNT(*) FROM Bookings WHERE flight_id = f.id AND status = 'Booked') as booked_seats
+        FROM Flights f
+        JOIN Planes p ON f.plane_id = p.id
+        JOIN Airports dep ON f.departure_airport = dep.id
+        JOIN Airports arr ON f.arrival_airport = arr.id
+        JOIN FlightStatus fs ON f.status = fs.id
+        WHERE f.departure_airport = )" + departure_id + R"(
+        AND f.arrival_airport = )" + arrival_id + R"(
+        AND DATE(f.departure_time) = ')" + date + R"('
+        ORDER BY f.departure_time
+    )";
+
+    PGresult* res = PQexec(conn, query.c_str());
+    if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+        send_response(client, "{\"error\":\"Error fetching flights: " + std::string(PQerrorMessage(conn)) + "\"}");
+        PQclear(res);
+        PQfinish(conn);
+        return;
+    }
+
+    std::ostringstream json;
+    json << "[";
+    for (int i = 0; i < PQntuples(res); i++) {
+        if (i > 0) json << ",";
+        json << "{"
+             << "\"id\":" << PQgetvalue(res, i, 0) << ","
+             << "\"plane\":{"
+             << "\"model\":\"" << PQgetvalue(res, i, 1) << "\","
+             << "\"capacity\":" << PQgetvalue(res, i, 2) << "},"
+             << "\"departure_airport\":{"
+             << "\"name\":\"" << PQgetvalue(res, i, 3) << "\","
+             << "\"code\":\"" << PQgetvalue(res, i, 4) << "\","
+             << "\"city\":\"" << PQgetvalue(res, i, 5) << "\"},"
+             << "\"arrival_airport\":{"
+             << "\"name\":\"" << PQgetvalue(res, i, 6) << "\","
+             << "\"code\":\"" << PQgetvalue(res, i, 7) << "\","
+             << "\"city\":\"" << PQgetvalue(res, i, 8) << "\"},"
+             << "\"departure_time\":\"" << PQgetvalue(res, i, 9) << "\","
+             << "\"arrival_time\":\"" << PQgetvalue(res, i, 10) << "\","
+             << "\"status\":\"" << PQgetvalue(res, i, 11) << "\","
+             << "\"available_seats\":" << (std::stoi(PQgetvalue(res, i, 2)) - std::stoi(PQgetvalue(res, i, 12))) << ","
+             << "\"booked_seats\":" << PQgetvalue(res, i, 12)
+             << "}";
+    }
+    json << "]";
+
+    PQclear(res);
+    PQfinish(conn);
+    send_response(client, json.str());
+}
+
 int main() {
     int server_fd, client;
     struct sockaddr_in address;
@@ -177,10 +250,42 @@ int main() {
             handle_request(client, body);
         }
         close(client);
+
+        if (request.find("GET /flights") != std::string::npos) {
+    
+    size_t params_start = request.find('?');
+    if (params_start != std::string::npos) {
+        std::string params_str = request.substr(params_start + 1);
+        std::istringstream params_stream(params_str);
+        std::string param;
+        std::string departure_id, arrival_id, date;
+
+        while (std::getline(params_stream, param, '&')) {
+            size_t eq_pos = param.find('=');
+            if (eq_pos != std::string::npos) {
+                std::string key = param.substr(0, eq_pos);
+                std::string value = param.substr(eq_pos + 1);
+                
+                if (key == "departure") departure_id = value;
+                else if (key == "arrival") arrival_id = value;
+                else if (key == "date") date = value;
+            }
+        }
+
+        if (!departure_id.empty() && !arrival_id.empty() && !date.empty()) {
+            handle_flights_request(client, departure_id, arrival_id, date);
+            close(client);
+            continue;
+        }
     }
+    send_response(client, "{\"error\":\"Missing parameters. Required: departure, arrival, date\"}");
+    close(client);
+    continue;
+}
+    }
+
+    
 
     return 0;
 }
-
-
 

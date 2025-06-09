@@ -1,7 +1,7 @@
-# Базовий образ з GCC для компіляції C++
+
 FROM gcc:12.2.0 as builder
 
-# Оновлюємо пакети та встановлюємо залежності
+
 RUN apt-get update && \
     apt-get install -y \
     libpq-dev \
@@ -9,44 +9,23 @@ RUN apt-get update && \
     postgresql-client\
     curl 
 
-# Створюємо робочу директорію
 WORKDIR /app
 
-# Копіюємо вихідні файли бекенду
 COPY backend/ ./
 
-# Компілюємо програму (виберіть один з варіантів)
-
-## Варіант 1: Проста компіляція без Makefile
-# RUN g++ -std=c++11 -Wall -I/usr/include/postgresql -o airline_server 
-# main.cpp -lpq
-
-## Варіант 2: Якщо ви використовуєте Makefile (розкоментуйте)
 RUN make
 
-## Варіант 3: Якщо ви використовуєте CMake (розкоментуйте)
-# RUN mkdir build && \
-#     cd build && \
-#     cmake .. && \
-#     make
-
-# Фінальний легкий образ
 FROM debian:bullseye-slim
 
-# Встановлюємо тільки необхідні бібліотеки
 RUN apt-get update && \
 apt-get install -y libpq5 curl && \ 
     rm -rf /var/lib/apt/lists/*
 
-# Копіюємо скомпільовану програму з образу builder
 COPY --from=builder /app/airline_server /usr/local/bin/
 
-# Вказуємо робочу директорію
 WORKDIR /app
 
-# Відкриваємо порт, який використовує додаток
 EXPOSE 8080
 
-# Команда для запуску сервера
 CMD ["airline_server"]
 

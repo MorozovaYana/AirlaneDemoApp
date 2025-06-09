@@ -10,9 +10,9 @@
           "main.cpp",
           "-o",
           "main",
-          "-lpq",  // посилання на libpq
-          "-I/usr/local/opt/libpq/include",                 // для macOS
-          "-L/usr/local/opt/libpq/lib"                      // для macOS
+          "-lpq",  
+          "-I/usr/local/opt/libpq/include",                 
+          "-L/usr/local/opt/libpq/lib"                      
         ],
         "group": {
           "kind": "build",
