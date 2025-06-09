@@ -61,7 +61,7 @@ void handle_request(int client, const std::string& body) {
     std::string flight_id = get_value(body, "flight_id");
     std::string seat = get_value(body, "seat");
 
-    PGconn* conn = PQconnectdb("dbname=airlanedb user=postgres password=postgres host=db port=5435");
+    PGconn* conn = PQconnectdb("dbname=airlanedb user=postgres password=postgres host=db port=5432");
     if (PQstatus(conn) != CONNECTION_OK) {
         send_response(client, "Database connection failed.");
         PQfinish(conn);
@@ -254,6 +254,7 @@ int main() {
         if (request.find("GET /flights") != std::string::npos) {
     
     size_t params_start = request.find('?');
+
     if (params_start != std::string::npos) {
         std::string params_str = request.substr(params_start + 1);
         std::istringstream params_stream(params_str);
