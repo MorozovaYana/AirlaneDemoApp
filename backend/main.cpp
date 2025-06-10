@@ -3,8 +3,9 @@
 #include <string>
 #include <cstring>
 #include <unistd.h>
-#include <netinet/in.h>
+#include <netinet/in.h>   
 #include <libpq-fe.h>
+
 
 void send_response(int client, const std::string& body) {
     std::ostringstream response;
@@ -58,6 +59,7 @@ void handle_options(int client) {
 void handle_request(int client, const std::string& body) {
     std::string name = get_value(body, "passenger_name");
     std::string email = get_value(body, "email");
+    std::string phone = get_value(body, "phone");
     std::string flight_id = get_value(body, "flight_id");
     std::string seat = get_value(body, "seat");
 
@@ -68,7 +70,7 @@ void handle_request(int client, const std::string& body) {
         return;
     }
 
-    std::string insert = "INSERT INTO Passengers (full_name, email) VALUES ('" + name + "', '" + email + "') RETURNING id";
+    std::string insert = "INSERT INTO Passengers (full_name, email, phone) VALUES ('" + name + "', '" + email + "', '" + phone + "') RETURNING id";
     PGresult* res1 = PQexec(conn, insert.c_str());
     if (PQresultStatus(res1) != PGRES_TUPLES_OK) {
         send_response(client, "Failed to insert passenger.");
@@ -243,14 +245,45 @@ int main() {
         continue;
     }
 
-        
-        auto pos = request.find("\r\n\r\n");
+//     if (request.find("GET /flights") != std::string::npos) {
+//     size_t params_start = request.find('?');
+
+//     if (params_start != std::string::npos) {
+//         std::string params_str = request.substr(params_start + 1);
+//         std::istringstream params_stream(params_str);
+//         std::string param;
+//         std::string departure_id, arrival_id, date;
+
+//         while (std::getline(params_stream, param, '&')) {
+//             size_t eq_pos = param.find('=');
+//             if (eq_pos != std::string::npos) {
+//                 std::string key = param.substr(0, eq_pos);
+//                 std::string value = param.substr(eq_pos + 1);
+                
+//                 if (key == "departure") departure_id = value;
+//                 else if (key == "arrival") arrival_id = value;
+//                 else if (key == "date") date = value;
+//             }
+//         }
+
+//         if (!departure_id.empty() && !arrival_id.empty() && !date.empty()) {
+//             handle_flights_request(client, departure_id, arrival_id, date);
+//             close(client);
+//             continue;
+//         }
+//     }
+//     send_response(client, "{\"error\":\"Missing parameters. Required: departure, arrival, date\"}");
+//     close(client);
+//     continue;
+// }
+
+      auto pos = request.find("\r\n\r\n");
         if (pos != std::string::npos) {
             std::string body = request.substr(pos + 4);
             handle_request(client, body);
         }
-        close(client);
-
+        close(client);  
+       
         if (request.find("GET /flights") != std::string::npos) {
     
     size_t params_start = request.find('?');
@@ -283,10 +316,12 @@ int main() {
     close(client);
     continue;
 }
+
+ 
     }
 
     
 
+    
     return 0;
 }
-

@@ -42,6 +42,7 @@ async function loadAirports() {
     }
 }
 
+
 // Обробник пошуку рейсів
 flightSearchForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -74,6 +75,83 @@ flightSearchForm.addEventListener('submit', async (e) => {
     }
 });
 
+// // Завантаження списку аеропортів
+// async function loadAirports() {
+//     try {
+//         const response = await fetch(`${API_BASE_URL}/airports`);
+//         const airports = await response.json();
+        
+//         // Очищаємо та заповнюємо випадаючі списки
+//         departureSelect.innerHTML = '';
+//         arrivalSelect.innerHTML = '';
+        
+//         const defaultOption = document.createElement('option');
+//         defaultOption.value = '';
+//         defaultOption.textContent = '-- Оберіть аеропорт --';
+//         departureSelect.appendChild(defaultOption.cloneNode(true));
+//         arrivalSelect.appendChild(defaultOption.cloneNode(true));
+        
+//         airports.forEach(airport => {
+//             const option = document.createElement('option');
+//             option.value = airport.id;
+//             option.textContent = `${airport.city} (${airport.code})`;
+//             departureSelect.appendChild(option.cloneNode(true));
+//             arrivalSelect.appendChild(option.cloneNode(true));
+//         });
+//     } catch (error) {
+//         console.error('Помилка завантаження аеропортів:', error);
+//         showError(searchResults, 'Не вдалося завантажити список аеропортів');
+//     }
+// }
+
+// flightSearchForm.addEventListener('submit', async (e) => {
+//     e.preventDefault();
+
+//     const departureId = departureSelect.value;
+//     const arrivalId = arrivalSelect.value;
+//     const date = document.getElementById('departureDate').value;
+
+//     if (!departureId || !arrivalId || !date) {
+//         showError(searchResults, 'Будь ласка, заповніть всі поля');
+//         return;
+//     }
+
+//     try {
+//         // Очищаємо попередні результати
+//         searchResults.innerHTML = "Завантаження...";
+
+//         const response = await fetch(`http://localhost:8080/flights?departure=${departureId}&arrival=${arrivalId}&date=${date}`);
+//         const flights = await response.json();
+
+//         if (flights.error || flights.length === 0) {
+//             showError(searchResults, 'Рейси не знайдено');
+//             return;
+//         }
+
+//         searchResults.innerHTML = ''; // очищаємо заглушку
+
+//         flights.forEach(flight => {
+//             const card = document.createElement('div');
+//             card.className = 'flight-card';
+
+//             card.innerHTML = `
+//                 <h3>Рейс ${flight.departure_airport.code} → ${flight.arrival_airport.code}</h3>
+//                 <p>Дата: ${date}</p>
+//                 <p>Час вильоту: ${flight.departure_time.split(' ')[1]}</p>
+//                 <p>Час прибуття: ${flight.arrival_time.split(' ')[1]}</p>
+//                 <p>Літак: ${flight.plane.model} (${flight.available_seats} місць доступно)</p>
+//                 <button onclick="showBookingForm(${flight.id})">Забронювати</button>
+//             `;
+
+//             searchResults.appendChild(card);
+//         });
+//     } catch (error) {
+//         console.error('Помилка пошуку рейсів:', error);
+//         showError(searchResults, 'Не вдалося знайти рейси');
+//     }
+// });
+
+
 // Показати форму бронювання
 function showBookingForm(flightId) {
     searchResults.innerHTML += `
@@ -89,6 +167,10 @@ function showBookingForm(flightId) {
                     <input type="email" id="passengerEmail" required>
                 </div>
                 <div class="form-group">
+                    <label for="phoneNumber">Телефон</label>
+                    <input type="tel" id="phoneNumber" required>
+                </div>
+                <div class="form-group">
                     <label for="seatNumber">Місце</label>
                     <input type="text" id="seatNumber" placeholder="Наприклад, 12A" required>
                 </div>
@@ -97,17 +179,19 @@ function showBookingForm(flightId) {
             </form>
         </div>
     `;
-    
+
     document.getElementById('passengerForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         await bookFlight();
     });
 }
 
+
 // Бронювання рейсу
 async function bookFlight() {
     const passengerName = document.getElementById('passengerName').value;
     const passengerEmail = document.getElementById('passengerEmail').value;
+    const phoneNumber = document.getElementById('phoneNumber').value;
     const seatNumber = document.getElementById('seatNumber').value;
     const flightId = document.getElementById('flightId').value;
     
@@ -117,7 +201,7 @@ async function bookFlight() {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: `passenger_name=${encodeURIComponent(passengerName)}&email=${encodeURIComponent(passengerEmail)}&flight_id=${flightId}&seat=${encodeURIComponent(seatNumber)}`
+            body: `passenger_name=${encodeURIComponent(passengerName)}&email=${encodeURIComponent(passengerEmail)}&phone=${encodeURIComponent(phoneNumber)}&flight_id=${flightId}&seat=${encodeURIComponent(seatNumber)}`
         });
         
         if (response.ok) {
